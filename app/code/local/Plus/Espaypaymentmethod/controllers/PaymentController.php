@@ -69,6 +69,23 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
             Mage::getSingleton('checkout/cart')->removeItem($item->getId())->save();
         }
 
+        $name = $orderData['customer_firstname'] . " " . $orderData['customer_middlename'] . "" . $orderData['customer_lastname'];
+        $email = $orderData['customer_email'];
+        $order_no = $orderData['increment_id'];
+        $total = $orderData['grand_total'];
+        $transfer_no = $orderData['customer_id'];
+        $transfer_bank = "Espay";
+
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_URL => 'http://vendor.tinkerlust.com/api_paymentconfirm.php?payment_sd=yes&name=$name&email=$email&order_no=$order_no&total=$total&transfer_no=$transfer_no&transfer_bank=$transfer_bank',
+            CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)',
+            CURLOPT_POST => 1
+        ));
+        $resp = curl_exec($curl);
+        curl_close($curl);
+
         $this->loadLayout();
         $block = $this->getLayout()->createBlock('Mage_Core_Block_Template', 'espaypaymentmethod', array('template' => 'espaypaymentmethod/redirect.phtml'));
         $block->assign(array('urlJs' => $urlJs, 'key' => $key, 'orderId' => $orderIncrementId, 'bankCode' => $bankCode, 'productCode' => $productCode));
