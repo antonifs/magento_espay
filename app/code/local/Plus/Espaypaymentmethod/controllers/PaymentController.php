@@ -43,11 +43,17 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
     }
 
     public function redirectAction() {
+
         $orderIncrementId = $this->_getCheckout()->getLastRealOrderId();
+
+        Mage::log("OrderID: " . $orderIncrementId, null, 'espay.log', true);
+
         $order = Mage::getModel('sales/order')
                 ->loadByIncrementId($orderIncrementId);
         $sessionId = Mage::getSingleton('core/session');
         $orderData = $order->getData();
+
+        Mage::log(print_r($orderData, 1), null, 'espay.log');
 
         $paymentData = $sessionId->getEspayPaymentMethod();
         $espayPayment = explode(':', $paymentData);
@@ -55,8 +61,7 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
         $productCode = $espayPayment[0];
         $bankCode = $espayPayment[1];
 
-
-        $urlJs = Mage::getStoreConfig('payment/espay/environment') == 'production' ? 'https://kit.espay.id' : 'https://sandbox-kit.espay.id';
+        $urlJs = Mage::getStoreConfig('payment/espay/environment') == 'production' ? 'https://secure.sgo.co.id' : 'http://secure-dev.sgo.co.id';
         $key = Mage::getStoreConfig('payment/espay/paymentid');
         Mage::getSingleton('checkout/session')->unsQuoteId();
         foreach (Mage::getSingleton('checkout/session')->getQuote()->getItemsCollection() as $item) {
@@ -66,6 +71,16 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
         foreach (Mage::getSingleton('checkout/session')->getQuote()->getItemsCollection() as $item) {
             Mage::getSingleton('checkout/cart')->removeItem($item->getId())->save();
         }
+
+        // $curl = curl_init();
+        // curl_setopt_array($curl, array(
+        //     CURLOPT_RETURNTRANSFER => 1,
+        //     CURLOPT_URL => 'http://vendor.tinkerlust.com/api_paymentconfirm.php?payment_sd=yes&name=$name&email=$email&order_no=$order_no&total=$total&transfer_no=$transfer_no&transfer_bank=$transfer_bank',
+        //     CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)',
+        //     CURLOPT_POST => 1
+        // ));
+        // $resp = curl_exec($curl);
+        // curl_close($curl);
 
         $this->loadLayout();
         $block = $this->getLayout()->createBlock('Mage_Core_Block_Template', 'espaypaymentmethod', array('template' => 'espaypaymentmethod/redirect.phtml'));
@@ -95,6 +110,9 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
         $mode = 'INQUIRY';
         $selfSignature = Mage::helper('espaypaymentmethod/data')->generateTrxSignature($rqDatetime, $orderId, $mode);
 
+        $data = ["sign" => $signature, "selfSignature" => $selfSignature];
+
+        Mage::log(print_r($data, true), null, 'espay.log', true);
 
         if ($signature === $selfSignature) {
             if ($webServicePassword == $password) {
@@ -229,7 +247,6 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
                 }
             }
         }
-
 
         if ($redirect) {
             if ($atm === TRUE) {
