@@ -79,8 +79,8 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
         $curl = curl_init();
         curl_setopt_array($curl, array(
             CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_URL => 'http://vendor.tinkerlust.com/api_paymentconfirm.php?payment_sd=yes&name=$name&email=$email&order_no=$order_no&total=$total&transfer_no=$transfer_no&transfer_bank=$transfer_bank',
-            CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)',
+            CURLOPT_URL => "http://vendor.tinkerlust.com/api_paymentconfirm.php?payment_sd=yes&name=$name&email=$email&order_no=$order_no&total=$total&transfer_no=$transfer_no&transfer_bank=$transfer_bank",
+            CURLOPT_USERAGENT => "Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)",
             CURLOPT_POST => 1
         ));
         $resp = curl_exec($curl);
