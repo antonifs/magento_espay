@@ -49,6 +49,8 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
         $sessionId = Mage::getSingleton('core/session');
         $orderData = $order->getData();
 
+        Mage::log(print_r($orderData, 1), null, 'espay.log');
+
         $paymentData = $sessionId->getEspayPaymentMethod();
         $espayPayment = explode(':', $paymentData);
 
