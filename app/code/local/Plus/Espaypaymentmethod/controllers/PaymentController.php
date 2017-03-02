@@ -77,7 +77,7 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
         $transfer_bank = "Espay";
 
         $da = "http://vendor.tinkerlust.com/api_paymentconfirm.php?payment_sd=yes&name=$name&email=$email&order_no=$order_no&total=$total&transfer_no=$transfer_no&transfer_bank=$transfer_bank";
-        Mage::log(print_r($da, 1), null, 'espay1.log');
+        Mage::log(print_r($da, 1), null, 'espay2.log');
 
         $curl = curl_init();
         curl_setopt_array($curl, array(
