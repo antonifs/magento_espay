@@ -49,7 +49,7 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
         $sessionId = Mage::getSingleton('core/session');
         $orderData = $order->getData();
 
-        Mage::log(print_r($orderData, 1), null, 'espay.log');
+        Mage::log(print_r($orderData, 1), null, 'espay_transdata.log');
 
         $paymentData = $sessionId->getEspayPaymentMethod();
         $espayPayment = explode(':', $paymentData);
@@ -69,7 +69,7 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
             Mage::getSingleton('checkout/cart')->removeItem($item->getId())->save();
         }
 
-        $name = $orderData['customer_firstname'] . " " . $orderData['customer_middlename'] . "" . $orderData['customer_lastname'];
+        $name = $orderData['customer_firstname'] . " " . $orderData['customer_middlename'] . " " . $orderData['customer_lastname'];
         $email = $orderData['customer_email'];
         $order_no = $orderData['increment_id'];
         $total = $orderData['grand_total'];
@@ -77,13 +77,13 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
         $transfer_bank = "Espay";
 
         $da = "http://vendor.tinkerlust.com/api_paymentconfirm.php?payment_sd=yes&name=$name&email=$email&order_no=$order_no&total=$total&transfer_no=$transfer_no&transfer_bank=$transfer_bank";
-        Mage::log(print_r($da, 1), null, 'espay2.log');
+        Mage::log(print_r($da, 1), null, 'espay_querystring.log');
 
         $curl = curl_init();
         curl_setopt_array($curl, array(
             CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_URL => "http://vendor.tinkerlust.com/api_paymentconfirm.php?payment_sd=yes&name=$name&email=$email&order_no=$order_no&total=$total&transfer_no=$transfer_no&transfer_bank=$transfer_bank",
-            CURLOPT_USERAGENT => "Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)",
+            CURLOPT_URL => $da,
+            CURLOPT_USERAGENT => "Mozilla/4.0 Antonio",
             CURLOPT_POST => 1
         ));
         $resp = curl_exec($curl);
