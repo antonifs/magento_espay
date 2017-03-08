@@ -49,8 +49,6 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
         $sessionId = Mage::getSingleton('core/session');
         $orderData = $order->getData();
 
-        Mage::log(print_r($orderData, 1), null, 'espay_transdata.log');
-
         $paymentData = $sessionId->getEspayPaymentMethod();
         $espayPayment = explode(':', $paymentData);
 
@@ -69,6 +67,7 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
             Mage::getSingleton('checkout/cart')->removeItem($item->getId())->save();
         }
 
+        // Send payment to vendor dashboard 
         $name = $orderData['customer_firstname'] . " " . $orderData['customer_middlename'] . " " . $orderData['customer_lastname'];
         $email = $orderData['customer_email'];
         $order_no = $orderData['increment_id'];
@@ -85,7 +84,8 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
         curl_setopt($curl, CURLOPT_USERAGENT, 1);
         curl_setopt($curl, CURLOPT_POST, 1);
         $resp = curl_exec($curl);
-        curl_close($curl);
+        curl_close($curl);        
+        // end of sending payment information
 
         $this->loadLayout();
         $block = $this->getLayout()->createBlock('Mage_Core_Block_Template', 'espaypaymentmethod', array('template' => 'espaypaymentmethod/redirect.phtml'));
@@ -169,6 +169,9 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
 
         $selfSignature = Mage::helper('espaypaymentmethod/data')->generateTrxSignature($rqDatetime, $orderId, $mode);
 
+        $pr_status = Mage::getModel('sales/order_status')->load('accpt_espay_' . strtolower($product_code));
+        $count_status = count($pr_status->getData('status'));
+
         if ($signature === $selfSignature) {
             if ($webServicePassword == $password) {
                 $order = Mage::getModel('sales/order')
@@ -193,7 +196,11 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
                             #$invoice->sendEmail(true, '');
 
                             $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING, true, 'Payment Success With Ref <b>' . $paymentRef . '</b>.');
-                            $order->setStatus('payment_accepted_espay_' . strtolower($product_code));
+                            if ($count_status != 0) {
+                                $order->setStatus('accpt_espay_' . strtolower($product_code));
+                            } else {
+                                $order->setStatus('payment_accepted_espay');
+                            }
                             $order->save();
                             $order->sendOrderUpdateEmail(true, 'Thank you, your payment is successfully processed.');
                             #$$order->setEmailSent(true);
@@ -242,7 +249,7 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
 
                     $orderData = $order->getData();
                     if (!empty($orderData)) {
-                        if ($orderData['status'] === 'payment_accepted_espay_' . strtolower($product)) {
+                        if ($orderData['status'] === 'accpt_espay_' . strtolower($product)) {
                             $redirect = TRUE;
                         }
                     }
@@ -273,5 +280,3 @@ class Plus_Espaypaymentmethod_PaymentController extends Mage_Core_Controller_Fro
         $this->getLayout()->getBlock('content')->append($block);
         $this->renderLayout();
     }
-
-}
